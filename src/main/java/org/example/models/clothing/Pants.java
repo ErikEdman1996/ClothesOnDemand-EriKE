@@ -3,7 +3,21 @@ package org.example.models.clothing;
 public class Pants extends Clothing
 {
     private String fit;
-    private String length;
+    private int length;
+
+    @Override
+    public Clothing clone()
+    {
+        Pants clone = new Pants();
+        clone.setPrice(getPrice());
+        clone.setMaterial(getMaterial());
+        clone.setSize(getSize());
+        clone.setColor(getColor());
+        clone.setFit(this.fit);
+        clone.setLength(this.length);
+
+        return clone;
+    }
 
     public Pants()
     {
@@ -18,11 +32,11 @@ public class Pants extends Clothing
         this.fit = fit;
     }
 
-    public String getLength() {
+    public int getLength() {
         return length;
     }
 
-    public void setLength(String length) {
+    public void setLength(int length) {
         this.length = length;
     }
 }

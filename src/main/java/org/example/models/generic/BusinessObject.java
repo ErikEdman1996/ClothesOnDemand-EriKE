@@ -1,8 +1,6 @@
 package org.example.models.generic;
 
-import java.io.Serializable;
-
-public class BusinessObject implements Serializable
+public class BusinessObject
 {
     private int id;
     private String name;

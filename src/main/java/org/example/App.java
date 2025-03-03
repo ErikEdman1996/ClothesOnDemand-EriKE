@@ -1,9 +1,12 @@
 package org.example;
 
-public class App 
+import org.example.views.ViewMainMenu;
+
+public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+        EShop eShop = new EShop();
+        eShop.run();
     }
 }
