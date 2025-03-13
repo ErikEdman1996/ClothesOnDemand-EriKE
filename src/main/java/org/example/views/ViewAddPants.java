@@ -2,6 +2,10 @@ package org.example.views;
 
 import org.example.controllers.builders.PantsBuilder;
 import org.example.controllers.commands.*;
+import org.example.controllers.commands.pants.CutAnkleLengthCommand;
+import org.example.controllers.commands.pants.CutFullLengthCommand;
+import org.example.controllers.commands.pants.SewRegularFitCommand;
+import org.example.controllers.commands.pants.SewSlimFitCommand;
 import org.example.controllers.managers.BusinessObjectManager;
 import org.example.models.clothing.Pants;
 import org.example.models.generic.Customer;
@@ -13,36 +17,35 @@ public class ViewAddPants extends View
     @Override
     public void printMenu()
     {
-        Customer currentCustomer = BusinessObjectManager.getInstance().getCurrentCustomer();
-        Pants customerPants = BusinessObjectManager.getInstance().newPants(currentCustomer.getName());
         PantsBuilder builder = new PantsBuilder();
+        Pipeline pipeline = new Pipeline();
+        Customer currentCustomer = BusinessObjectManager.getInstance().getCurrentCustomer();
+        Pants customerPants;
 
-        //Get instructions for the tailor
-        pickMaterial(builder);
-        pickSize(builder);
-        pickColor(builder);
-        pickFit(builder);
-        pickLength(builder);
+        /*3 första stegen ska skötas med Builder*/
+        customerPants = builder
+                .addMaterial(pickMaterial())
+                .addSize(pickSize())
+                .addColor(pickColor())
+                .build();
 
-        Pants instructions = builder.build();
+        /*Steg 4-5 ska skötas med Commands via en loop*/
+        pipeline.addCommand(pickFit());
+        pipeline.addCommand(pickLength());
 
-        //Build process
-        new SetMaterialCommand().process(instructions, customerPants);
-        new SetSizeCommand().process(instructions, customerPants);
-        new SetColorCommand().process(instructions, customerPants);
-        new SewFitCommand().process(instructions, customerPants);
-        new CutLengthCommand().process(instructions, customerPants);
+        pipeline.execute(customerPants);
 
-        customerPants.notifyObservers(currentCustomer.getName()+"'s pants are finished!");
+        customerPants.notifyObservers("Notifying CEO: "+currentCustomer.getName()+"'s pants are finished!");
 
         //Add to Order
         BusinessObjectManager.getInstance().getCurrentOrder().addToOrder(customerPants);
     }
 
-    private void pickMaterial(PantsBuilder builder)
+    private String pickMaterial()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String material = "";
         boolean finished = false;
         do
         {
@@ -58,18 +61,18 @@ public class ViewAddPants extends View
             {
                 case 1:
                     System.out.println("You picked cotton!");
-                    builder.addMaterial("Cotton");
+                    material = "Cotton";
                     break;
                 case 2:
                     System.out.println("You picked wool!");
-                    builder.addMaterial("Wool");
+                    material = "Wool";
                     break;
                 case 3:
                     System.out.println("You picked denim!");
-                    builder.addMaterial("Denim");
+                    material = "Denim";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -80,12 +83,15 @@ public class ViewAddPants extends View
             }
 
         }while(!finished);
+
+        return material;
     }
 
-    private void pickSize(PantsBuilder builder)
+    private String pickSize()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String size = "";
         boolean finished = false;
         do
         {
@@ -101,18 +107,18 @@ public class ViewAddPants extends View
             {
                 case 1:
                     System.out.println("You picked size Small!");
-                    builder.addSize("Small");
+                    size = "Small";
                     break;
                 case 2:
                     System.out.println("You picked size Medium!");
-                    builder.addSize("Medium");
+                    size = "Medium";
                     break;
                 case 3:
                     System.out.println("You picked size Large!");
-                    builder.addSize("Large");
+                    size = "Large";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -123,12 +129,16 @@ public class ViewAddPants extends View
             }
 
         }while(!finished);
+
+
+        return size;
     }
 
-    private void pickColor(PantsBuilder builder)
+    private String pickColor()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String color = "";
         boolean finished = false;
         do
         {
@@ -144,18 +154,18 @@ public class ViewAddPants extends View
             {
                 case 1:
                     System.out.println("You picked the color White!");
-                    builder.addColor("White");
+                    color = "White";
                     break;
                 case 2:
                     System.out.println("You picked the color Blue!");
-                    builder.addColor("Blue");
+                    color = "Blue";
                     break;
                 case 3:
                     System.out.println("You picked the color Black!");
-                    builder.addColor("Black");
+                    color = "Black";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -166,12 +176,15 @@ public class ViewAddPants extends View
             }
 
         }while(!finished);
+
+        return color;
     }
 
-    private void pickFit(PantsBuilder builder)
+    private Command pickFit()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        Command fit = null;
         boolean finished = false;
         do
         {
@@ -186,14 +199,14 @@ public class ViewAddPants extends View
             {
                 case 1:
                     System.out.println("You picked slim-fit!");
-                    builder.addFit("Slim");
+                    fit = new SewSlimFitCommand();
                     break;
                 case 2:
                     System.out.println("You picked regular-fit!");
-                    builder.addFit("Regular");
+                    fit = new SewRegularFitCommand();
                     break;
                 case 0:
-                    return;
+                    return null;
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -204,18 +217,38 @@ public class ViewAddPants extends View
             }
 
         }while(!finished);
+
+        return fit;
     }
 
-    private void pickLength(PantsBuilder builder)
+    private Command pickLength()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        Command length = null;
         boolean finished = false;
         do
         {
-            System.out.print("Select pant length between 102 - 117 cm: ");
+            System.out.println("Select length: ");
+            System.out.println("1. Full length");
+            System.out.println("2. Ankle length");
+            System.out.println("0. Return");
+            System.out.print("Your choice: ");
+
             userInput = scanner.nextInt();
-            builder.addLength(userInput);
+            switch (userInput)
+            {
+                case 1:
+                    System.out.println("You picked full length!");
+                    length = new CutFullLengthCommand();
+                    break;
+                case 2:
+                    System.out.println("You picked ankle length!");
+                    length = new CutAnkleLengthCommand();
+                    break;
+                case 0:
+                    return null;
+            }
 
             System.out.println("Are you happy with your choice? y/n");
             String answer = scanner.next();
@@ -225,5 +258,8 @@ public class ViewAddPants extends View
             }
 
         }while(!finished);
+
+        return length;
     }
+
 }

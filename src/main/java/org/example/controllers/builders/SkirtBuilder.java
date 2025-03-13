@@ -1,5 +1,6 @@
 package org.example.controllers.builders;
 
+import org.example.controllers.managers.BusinessObjectManager;
 import org.example.models.clothing.Skirt;
 
 import java.util.ArrayList;
@@ -7,12 +8,10 @@ import java.util.List;
 
 public class SkirtBuilder
 {
-    private Skirt skirt = new Skirt();
+    private Skirt skirt = BusinessObjectManager.getInstance().newSkirt(BusinessObjectManager.getInstance().getCurrentCustomer().getName());
     private List<String> validMaterials = new ArrayList<>();
     private List<String> validSizes = new ArrayList<>();
     private List<String> validColors = new ArrayList<>();
-    private List<Integer> validWaistlines = new ArrayList<>();
-    private List<String> validPatterns = new ArrayList<>();
 
     public SkirtBuilder()
     {
@@ -27,14 +26,6 @@ public class SkirtBuilder
         validColors.add("White");
         validColors.add("Blue");
         validColors.add("Black");
-
-        //Smallest waistline in cm
-        validWaistlines.add(80);
-        //Largest waistline in cm
-        validWaistlines.add(100);
-
-        validPatterns.add("Polka dots");
-        validPatterns.add("Lines");
     }
 
     public Skirt build()
@@ -55,6 +46,7 @@ public class SkirtBuilder
         }
 
         skirt.setMaterial(material);
+        skirt.notifyObservers("Notifying CEO: picking material "+material+"...");
         return this;
     }
 
@@ -66,6 +58,8 @@ public class SkirtBuilder
         }
 
         skirt.setColor(color);
+        skirt.notifyObservers("Notifying CEO: adding color "+color+"...");
+
         return this;
     }
 
@@ -76,28 +70,7 @@ public class SkirtBuilder
             throw new IllegalArgumentException("Invalid size");
         }
         skirt.setSize(size);
-        return this;
-    }
-
-    public SkirtBuilder addWaistline(int waistline)
-    {
-        if(waistline < validWaistlines.get(0) || waistline > validWaistlines.get(1))
-        {
-            throw new IllegalArgumentException("Invalid waistline");
-        }
-
-        skirt.setWaistline(waistline);
-        return this;
-    }
-
-    public SkirtBuilder addPattern(String pattern)
-    {
-        if (!validPatterns.contains(pattern))
-        {
-            throw new IllegalArgumentException("Invalid pattern");
-        }
-
-        skirt.setPattern(pattern);
+        skirt.notifyObservers("Notifying CEO: setting size "+size+"...");
         return this;
     }
 }

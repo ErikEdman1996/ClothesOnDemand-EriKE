@@ -2,7 +2,7 @@ package org.example.models.clothing;
 
 public class Skirt extends Clothing
 {
-    private int waistline;
+    private String waistline;
     private String pattern;
 
     @Override
@@ -25,11 +25,13 @@ public class Skirt extends Clothing
 
     }
 
-    public int getWaistline() {
+    public String getWaistline()
+    {
         return waistline;
     }
 
-    public void setWaistline(int waistline) {
+    public void setWaistline(String waistline)
+    {
         this.waistline = waistline;
     }
 

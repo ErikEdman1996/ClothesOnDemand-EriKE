@@ -3,7 +3,7 @@ package org.example.models.clothing;
 public class Pants extends Clothing
 {
     private String fit;
-    private int length;
+    private String length;
 
     @Override
     public Clothing clone()
@@ -32,11 +32,11 @@ public class Pants extends Clothing
         this.fit = fit;
     }
 
-    public int getLength() {
+    public String getLength() {
         return length;
     }
 
-    public void setLength(int length) {
+    public void setLength(String length) {
         this.length = length;
     }
 }

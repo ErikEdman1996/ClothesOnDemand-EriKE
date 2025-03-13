@@ -1,5 +1,6 @@
 package org.example.controllers.builders;
 
+import org.example.controllers.managers.BusinessObjectManager;
 import org.example.models.clothing.TShirt;
 
 import java.util.ArrayList;
@@ -7,13 +8,11 @@ import java.util.List;
 
 public class TShirtBuilder
 {
-    private TShirt tshirt = new TShirt();
+    private TShirt tshirt = BusinessObjectManager.getInstance().newTShirt(BusinessObjectManager.getInstance().getCurrentCustomer().getName());
 
     private List<String> validMaterials = new ArrayList<>();
     private List<String> validSizes = new ArrayList<>();
     private List<String> validColors = new ArrayList<>();
-    private List<String> validNecks = new ArrayList<>();
-    private List<String> validSleeves = new ArrayList<>();
 
     public TShirtBuilder()
     {
@@ -28,12 +27,6 @@ public class TShirtBuilder
         validColors.add("White");
         validColors.add("Grey");
         validColors.add("Black");
-
-        validNecks.add("V-neck");
-        validNecks.add("Crew neck");
-
-        validSleeves.add("Long");
-        validSleeves.add("Short");
 
     }
 
@@ -54,6 +47,7 @@ public class TShirtBuilder
         }
 
         tshirt.setMaterial(material);
+        tshirt.notifyObservers("Notifying CEO: picking material "+material+"...");
         return this;
     }
 
@@ -65,6 +59,7 @@ public class TShirtBuilder
         }
 
         tshirt.setSize(size);
+        tshirt.notifyObservers("Notifying CEO: setting size "+size+"...");
         return this;
     }
 
@@ -75,26 +70,7 @@ public class TShirtBuilder
             throw new IllegalArgumentException("Invalid color");
         }
         tshirt.setColor(color);
-        return this;
-    }
-
-    public TShirtBuilder addSleeves(String sleeves)
-    {
-        if(!validSleeves.contains(sleeves))
-        {
-            throw new IllegalArgumentException("Invalid sleeve");
-        }
-        tshirt.setSleeves(sleeves);
-        return this;
-    }
-
-    public TShirtBuilder addNeck(String neck)
-    {
-        if(!validNecks.contains(neck))
-        {
-            throw new IllegalArgumentException("Invalid neck");
-        }
-        tshirt.setNeck(neck);
+        tshirt.notifyObservers("Notifying CEO: adding color "+color+"...");
         return this;
     }
 }

@@ -17,8 +17,6 @@ public class TShirtBuilderTest extends TestCase {
                 .addMaterial("Cotton")
                 .addSize("Medium")
                 .addColor("White")
-                .addNeck("V-neck")
-                .addSleeves("Long")
                 .build();
 
         assertNotNull(tshirt);
@@ -62,24 +60,6 @@ public class TShirtBuilderTest extends TestCase {
     public void testInvalidColorThrowsException() {
         try {
             builder.addColor("Blue");
-            fail("Expected IllegalArgumentException but none was thrown.");
-        } catch (IllegalArgumentException e) {
-            // Expected exception
-        }
-    }
-
-    public void testInvalidNeckThrowsException() {
-        try {
-            builder.addNeck("Turtle");
-            fail("Expected IllegalArgumentException but none was thrown.");
-        } catch (IllegalArgumentException e) {
-            // Expected exception
-        }
-    }
-
-    public void testInvalidSleevesThrowsException() {
-        try {
-            builder.addSleeves("No sleeves");
             fail("Expected IllegalArgumentException but none was thrown.");
         } catch (IllegalArgumentException e) {
             // Expected exception

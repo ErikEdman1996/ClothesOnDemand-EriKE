@@ -1,10 +1,12 @@
 package org.example.views;
 
-import org.example.controllers.builders.PantsBuilder;
 import org.example.controllers.builders.SkirtBuilder;
 import org.example.controllers.commands.*;
+import org.example.controllers.commands.skirt.AddLinesPatternCommand;
+import org.example.controllers.commands.skirt.AddPolkaPatternCommand;
+import org.example.controllers.commands.skirt.SetHighWaistlineCommand;
+import org.example.controllers.commands.skirt.SetLowWaistlineCommand;
 import org.example.controllers.managers.BusinessObjectManager;
-import org.example.models.clothing.Pants;
 import org.example.models.clothing.Skirt;
 import org.example.models.generic.Customer;
 
@@ -16,35 +18,32 @@ public class ViewAddSkirt extends View
     public void printMenu()
     {
         Customer currentCustomer = BusinessObjectManager.getInstance().getCurrentCustomer();
-        Skirt customerSkirt = BusinessObjectManager.getInstance().newSkirt(currentCustomer.getName());
+        Skirt customerSkirt;
         SkirtBuilder builder = new SkirtBuilder();
+        Pipeline pipeline = new Pipeline();
 
-        //Get instructions for the tailor
-        pickMaterial(builder);
-        pickSize(builder);
-        pickColor(builder);
-        pickWaistline(builder);
-        pickPattern(builder);
+        customerSkirt = builder
+                .addMaterial(pickMaterial())
+                .addSize(pickSize())
+                .addColor(pickColor())
+                .build();
 
-        Skirt instructions = builder.build();
+        pipeline.addCommand(pickWaistline());
+        pipeline.addCommand(pickPattern());
 
-        //Build process
-        new SetMaterialCommand().process(instructions, customerSkirt);
-        new SetSizeCommand().process(instructions, customerSkirt);
-        new SetColorCommand().process(instructions, customerSkirt);
-        new SetWaistlineCommand().process(instructions, customerSkirt);
-        new AddPatternCommand().process(instructions, customerSkirt);
+        pipeline.execute(customerSkirt);
 
-        customerSkirt.notifyObservers(currentCustomer.getName()+"'s skirt is finished!");
+        customerSkirt.notifyObservers("Notifying CEO: "+currentCustomer.getName()+"'s skirt is finished!");
 
         //Add to Order
         BusinessObjectManager.getInstance().getCurrentOrder().addToOrder(customerSkirt);
     }
 
-    private void pickMaterial(SkirtBuilder builder)
+    private String pickMaterial()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String material = "";
         boolean finished = false;
         do
         {
@@ -60,18 +59,18 @@ public class ViewAddSkirt extends View
             {
                 case 1:
                     System.out.println("You picked cotton!");
-                    builder.addMaterial("Cotton");
+                    material = "Cotton";
                     break;
                 case 2:
                     System.out.println("You picked wool!");
-                    builder.addMaterial("Wool");
+                    material = "Wool";
                     break;
                 case 3:
                     System.out.println("You picked denim!");
-                    builder.addMaterial("Denim");
+                    material = "Denim";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -82,12 +81,15 @@ public class ViewAddSkirt extends View
             }
 
         }while(!finished);
+
+        return material;
     }
 
-    private void pickSize(SkirtBuilder builder)
+    private String pickSize()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String size = "";
         boolean finished = false;
         do
         {
@@ -103,18 +105,18 @@ public class ViewAddSkirt extends View
             {
                 case 1:
                     System.out.println("You picked size Small!");
-                    builder.addSize("Small");
+                    size = "Small";
                     break;
                 case 2:
                     System.out.println("You picked size Medium!");
-                    builder.addSize("Medium");
+                    size =  "Medium";
                     break;
                 case 3:
                     System.out.println("You picked size Large!");
-                    builder.addSize("Large");
+                    size =  "Large";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -125,12 +127,15 @@ public class ViewAddSkirt extends View
             }
 
         }while(!finished);
+
+        return size;
     }
 
-    private void pickColor(SkirtBuilder builder)
+    private String pickColor()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String color = "";
         boolean finished = false;
         do
         {
@@ -146,18 +151,18 @@ public class ViewAddSkirt extends View
             {
                 case 1:
                     System.out.println("You picked the color White!");
-                    builder.addColor("White");
+                    color = "White";
                     break;
                 case 2:
                     System.out.println("You picked the color Blue!");
-                    builder.addColor("Blue");
+                    color = "Blue";
                     break;
                 case 3:
                     System.out.println("You picked the color Black!");
-                    builder.addColor("Black");
+                    color = "Black";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -168,18 +173,38 @@ public class ViewAddSkirt extends View
             }
 
         }while(!finished);
+
+        return color;
     }
 
-    private void pickWaistline(SkirtBuilder builder)
+    private Command pickWaistline()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        Command waistline = null;
         boolean finished = false;
         do
         {
-            System.out.print("Select skirt waistline length between 80 - 100 cm: ");
+            System.out.println("Select waistline: ");
+            System.out.println("1. High waistline");
+            System.out.println("2. Low waistline");
+            System.out.println("0. Return");
+            System.out.print("Your choice: ");
+
             userInput = scanner.nextInt();
-            builder.addWaistline(userInput);
+            switch (userInput)
+            {
+                case 1:
+                    System.out.println("You picked high waistline!");
+                    waistline = new SetHighWaistlineCommand();
+                    break;
+                case 2:
+                    System.out.println("You picked low waistline!");
+                    waistline = new SetLowWaistlineCommand();
+                    break;
+                case 0:
+                    return null;
+            }
 
             System.out.println("Are you happy with your choice? y/n");
             String answer = scanner.next();
@@ -189,12 +214,15 @@ public class ViewAddSkirt extends View
             }
 
         }while(!finished);
+
+        return waistline;
     }
 
-    private void pickPattern(SkirtBuilder builder)
+    private Command pickPattern()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        Command pattern = null;
         boolean finished = false;
         do
         {
@@ -209,14 +237,14 @@ public class ViewAddSkirt extends View
             {
                 case 1:
                     System.out.println("You picked polka dots!");
-                    builder.addPattern("Polka dots");
+                    pattern = new AddPolkaPatternCommand();
                     break;
                 case 2:
                     System.out.println("You picked lines!");
-                    builder.addPattern("Lines");
+                    pattern = new AddLinesPatternCommand();
                     break;
                 case 0:
-                    return;
+                    return null;
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -227,5 +255,7 @@ public class ViewAddSkirt extends View
             }
 
         }while(!finished);
+
+        return pattern;
     }
 }

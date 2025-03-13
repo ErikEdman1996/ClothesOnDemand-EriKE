@@ -1,5 +1,6 @@
 package org.example.controllers.builders;
 
+import org.example.controllers.managers.BusinessObjectManager;
 import org.example.models.clothing.Pants;
 
 import java.util.ArrayList;
@@ -7,12 +8,11 @@ import java.util.List;
 
 public class PantsBuilder
 {
-    private Pants pants = new Pants();
+    private Pants pants = BusinessObjectManager.getInstance().newPants(BusinessObjectManager.getInstance().getCurrentCustomer().getName());
+
     private List<String> validMaterials = new ArrayList<>();
     private List<String> validSizes = new ArrayList<>();
     private List<String> validColors = new ArrayList<>();
-    private List<String> validFits = new ArrayList<>();
-    private List<Integer> validLengths = new ArrayList<>();
 
     public PantsBuilder()
     {
@@ -27,14 +27,6 @@ public class PantsBuilder
         validColors.add("White");
         validColors.add("Blue");
         validColors.add("Black");
-
-        validFits.add("Slim");
-        validFits.add("Regular");
-
-        //Smallest length in cm
-        validLengths.add(102);
-        //Largest length in cm
-        validLengths.add(117);
     }
 
     public Pants build()
@@ -55,6 +47,7 @@ public class PantsBuilder
         }
 
         pants.setSize(size);
+        pants.notifyObservers("Notifying CEO: setting size "+size+"...");
         return this;
     }
 
@@ -66,6 +59,7 @@ public class PantsBuilder
         }
 
         pants.setMaterial(material);
+        pants.notifyObservers("Notifying CEO: picking material "+material+"...");
         return this;
     }
 
@@ -77,27 +71,7 @@ public class PantsBuilder
         }
 
         pants.setColor(color);
-        return this;
-    }
-
-    public PantsBuilder addFit(String fit)
-    {
-        if(!validFits.contains(fit))
-        {
-            throw new IllegalArgumentException("Invalid fit");
-        }
-        pants.setFit(fit);
-        return this;
-    }
-
-    public PantsBuilder addLength(int length)
-    {
-        if(length < validLengths.get(0) || length > validLengths.get(1))
-        {
-            throw new IllegalArgumentException("Invalid length, must be between 102 and 117 cm");
-        }
-
-        pants.setLength(length);
+        pants.notifyObservers("Notifying CEO: adding color "+color+"...");
         return this;
     }
 }

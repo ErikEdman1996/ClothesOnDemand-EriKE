@@ -3,6 +3,10 @@ package org.example.views;
 import org.example.controllers.builders.SkirtBuilder;
 import org.example.controllers.builders.TShirtBuilder;
 import org.example.controllers.commands.*;
+import org.example.controllers.commands.tshirt.SetCrewNeckCommand;
+import org.example.controllers.commands.tshirt.SetLongSleevesCommand;
+import org.example.controllers.commands.tshirt.SetShortSleevesCommand;
+import org.example.controllers.commands.tshirt.SetVNeckCommand;
 import org.example.controllers.managers.BusinessObjectManager;
 import org.example.models.clothing.TShirt;
 import org.example.models.generic.Customer;
@@ -15,24 +19,20 @@ public class ViewAddTShirt extends View
     public void printMenu()
     {
         Customer currentCustomer = BusinessObjectManager.getInstance().getCurrentCustomer();
-        TShirt customerShirt = BusinessObjectManager.getInstance().newTShirt(currentCustomer.getName());
+        Pipeline pipeline = new Pipeline();
+        TShirt customerShirt;
         TShirtBuilder builder = new TShirtBuilder();
 
-        //Get instructions for the tailor
-        pickMaterial(builder);
-        pickSize(builder);
-        pickColor(builder);
-        pickNeck(builder);
-        pickSleeves(builder);
+        customerShirt = builder
+                .addMaterial(pickMaterial())
+                .addSize(pickSize())
+                .addColor(pickColor())
+                .build();
 
-        TShirt instructions = builder.build();
+        pipeline.addCommand(pickNeck());
+        pipeline.addCommand(pickSleeves());
 
-        //Build process
-        new SetMaterialCommand().process(instructions, customerShirt);
-        new SetSizeCommand().process(instructions, customerShirt);
-        new SetColorCommand().process(instructions, customerShirt);
-        new SetNeckCommand().process(instructions, customerShirt);
-        new SetSleevesCommand().process(instructions, customerShirt);
+        pipeline.execute(customerShirt);
 
         customerShirt.notifyObservers(currentCustomer.getName()+"'s T-Shirt is finished!");
 
@@ -40,10 +40,11 @@ public class ViewAddTShirt extends View
         BusinessObjectManager.getInstance().getCurrentOrder().addToOrder(customerShirt);
     }
 
-    private void pickMaterial(TShirtBuilder builder)
+    private String pickMaterial()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String material = "";
         boolean finished = false;
         do
         {
@@ -59,18 +60,18 @@ public class ViewAddTShirt extends View
             {
                 case 1:
                     System.out.println("You picked cotton!");
-                    builder.addMaterial("Cotton");
+                    material = "Cotton";
                     break;
                 case 2:
                     System.out.println("You picked polyester!");
-                    builder.addMaterial("Polyester");
+                    material = "Polyester";
                     break;
                 case 3:
                     System.out.println("You picked linen!");
-                    builder.addMaterial("Linen");
+                    material = "Linen";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -81,12 +82,15 @@ public class ViewAddTShirt extends View
             }
 
         }while(!finished);
+
+        return material;
     }
 
-    private void pickSize(TShirtBuilder builder)
+    private String pickSize()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String size = "";
         boolean finished = false;
         do
         {
@@ -102,18 +106,18 @@ public class ViewAddTShirt extends View
             {
                 case 1:
                     System.out.println("You picked size Small!");
-                    builder.addSize("Small");
+                    size = "Small";
                     break;
                 case 2:
                     System.out.println("You picked size Medium!");
-                    builder.addSize("Medium");
+                    size = "Medium";
                     break;
                 case 3:
                     System.out.println("You picked size Large!");
-                    builder.addSize("Large");
+                    size = "Large";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -124,12 +128,15 @@ public class ViewAddTShirt extends View
             }
 
         }while(!finished);
+
+        return size;
     }
 
-    private void pickColor(TShirtBuilder builder)
+    private String pickColor()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        String color = "";
         boolean finished = false;
         do
         {
@@ -145,18 +152,18 @@ public class ViewAddTShirt extends View
             {
                 case 1:
                     System.out.println("You picked the color White!");
-                    builder.addColor("White");
+                    color = "White";
                     break;
                 case 2:
                     System.out.println("You picked the color Grey!");
-                    builder.addColor("Grey");
+                    color = "Grey";
                     break;
                 case 3:
                     System.out.println("You picked the color Black!");
-                    builder.addColor("Black");
+                    color = "Black";
                     break;
                 case 0:
-                    return;
+                    return "";
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -167,12 +174,15 @@ public class ViewAddTShirt extends View
             }
 
         }while(!finished);
+
+        return color;
     }
 
-    private void pickNeck(TShirtBuilder builder)
+    private Command pickNeck()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        Command neck = null;
         boolean finished = false;
         do
         {
@@ -187,14 +197,14 @@ public class ViewAddTShirt extends View
             {
                 case 1:
                     System.out.println("You picked V-neck!");
-                    builder.addNeck("V-neck");
+                    neck = new SetVNeckCommand();
                     break;
                 case 2:
                     System.out.println("You picked Crew neck!");
-                    builder.addNeck("Crew neck");
+                    neck = new SetCrewNeckCommand();
                     break;
                 case 0:
-                    return;
+                    return null;
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -205,12 +215,15 @@ public class ViewAddTShirt extends View
             }
 
         }while(!finished);
+
+        return neck;
     }
 
-    private void pickSleeves(TShirtBuilder builder)
+    private Command pickSleeves()
     {
         Scanner scanner = new Scanner(System.in);
         int userInput;
+        Command sleeves = null;
         boolean finished = false;
         do
         {
@@ -225,14 +238,14 @@ public class ViewAddTShirt extends View
             {
                 case 1:
                     System.out.println("You picked long sleeves!");
-                    builder.addSleeves("Long");
+                    sleeves = new SetLongSleevesCommand();
                     break;
                 case 2:
                     System.out.println("You picked short sleeves!");
-                    builder.addSleeves("Short");
+                    sleeves = new SetShortSleevesCommand();
                     break;
                 case 0:
-                    return;
+                    return null;
             }
 
             System.out.println("Are you happy with your choice? y/n");
@@ -243,6 +256,8 @@ public class ViewAddTShirt extends View
             }
 
         }while(!finished);
+
+        return sleeves;
     }
 }
 

@@ -20,14 +20,14 @@ public class ClothingPrototypeCache
         pants.setSize("M");
         pants.setColor("Blue");
         pants.setFit("Regular");
-        pants.setLength(102);
+        pants.setLength("Full Length");
 
         Skirt skirt = new Skirt();
         skirt.setPrice(175);
         skirt.setMaterial("Wool");
         skirt.setSize("M");
         skirt.setColor("Black");
-        skirt.setWaistline(80);
+        skirt.setWaistline("High Waist");
         skirt.setPattern("Lines");
 
         TShirt tShirt = new TShirt();
